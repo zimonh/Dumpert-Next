@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name     dumpert next
-// @version  1
-// @include  https://www.dumpert.nl/*
+// @name         Dumpert - Next
+// @version      1
+// @description  A button for dumpert.nl to go to the next or previous video. 
+// @author       ZIMONH
+// @include  *://www.dumpert.nl/*
 // @grant    none
 // ==/UserScript==
-
-//re-order
 
 let allmovies_local = [];
 const BuildUrlArray_local = html =>{
