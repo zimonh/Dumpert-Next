@@ -22,3 +22,7 @@ To use user scripts you need to first install a user script manager. Which user 
 1. Click on you addon/extention and choose __create new script__.
 2. Copy the content of __Dumpert_Next_Script.js__ and replace the content of the new script.
 3. Press __Ctrl-S__ or __Save__ in the menu.
+
+## License
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc-sa/4.0/88x31.png" /></a><br>
+Copyright - ZIMONH 2018
