@@ -1,11 +1,14 @@
 // ==UserScript==
 // @name         Dumpert - Next
 // @version      1
-// @description  A button for dumpert.nl to go to the next or previous video. 
+// @description  A button for dumpert.nl to go to the next or previous video.
 // @author       ZIMONH
 // @include  *://www.dumpert.nl/*
 // @grant    none
 // ==/UserScript==
+
+/* by: ZIMONH src: https://github.com/zimonh/Dumpert-Next
+   License: https://creativecommons.org/licenses/by-nc-sa/4.0/ */
 
 let allmovies_local = [];
 const BuildUrlArray_local = html =>{
@@ -64,7 +67,7 @@ let stored = Number(localStorage.getItem("h_hours"));
 
 if (stored === 0 || stored !== half_hours) {
 	localStorage.setItem("h_hours", half_hours);
-  
+
 	fetch("https://www.dumpert.nl/")
 	.then(data => data.text())
 	.then(html => { BuildUrlArray_local(html); })
