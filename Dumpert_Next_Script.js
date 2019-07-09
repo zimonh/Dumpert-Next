@@ -1,169 +1,136 @@
+/*by: ZIMONH src: https://github.com/zimonh/Dumpert-Next
+License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 // ==UserScript==
 // @name     Dumpert Next
-// @version  2
+// @version  3
 // @description  A button for dumpert.nl to go to the next or previous video.
 // @author       ZIMONH
 // @include  https://www.dumpert.nl/*
 // @grant    none
 // ==/UserScript==
-/*by: ZIMONH src: https://github.com/zimonh/Dumpert-Next
-License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
-
-
-// ==UserScript==
-// @name     Dumpert Next
-// @version  2
-// @description  A button for dumpert.nl to go to the next or previous video.
-// @author       ZIMONH
-// @include  https://www.dumpert.nl/*
-// @grant    none
-// ==/UserScript==
-/*by: ZIMONH src: https://github.com/zimonh/Dumpert-Next
-License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
-
+/*jshint esversion: 6 */
 (() => {
-  
+
+	const under = document.createElement('div');
+	const meta = document.querySelector('.dump-meta');
+	under.innerHTML = meta;
+	document.querySelector('.dump-meta').remove();
+	document.querySelector('.dump-main').append(meta);
+	const TEST_WATERS = true;
 
 	const DumpertNext = {
-
-
-		TESTWATERS: 1,
 
 		log(){
 			console.log('DumpertNext:', ...arguments);
 		},
 
-
-		createArticleObjectArray(html, origin, testWaters){
-
-			const array = [];
-			const temp = document.createElement('div');
-			temp.innerHTML = html;
-			const movies = temp.querySelectorAll('.dumpthumb');
-
-			for(let movie of Array.from(movies)){
-
-				const item = {
-					url:movie.getAttribute("href"),
-					img:movie.querySelector('img').getAttribute("src"),
-					title:movie.querySelector('.details h1').innerHTML,
-					date:movie.querySelector('.details date').innerHTML,
-					description:movie.querySelector('.details p.description').innerHTML,
-					origin};
-
-				array.push(item);
-
-			}
-
-			return array;
-
-		},
-
-		getMovieUniqueId(string){
-
-			const regex = /mediabase\/([0-9]+)/g;
-			return regex.exec(string)[1];
-
-		},
-
-
-
 		dumpertNextButtonHTML(data, direction){
 
 			DumpertNext.log('dumpertNextButtonHTML: ', data, direction);
 
-			return `<div style="display: inline-block;"><h1>${direction}</h1><a href="${data.url}" class="dumpthumb" title="${data.title}">
-				<img src="${data.img}" alt="${data.title}" title="${data.title}" width="100" height="100">
+		return `<div style="display: inline-block;"><h1>${direction}</h1><a href="https://www.dumpert.nl/mediabase/${data.id.replace("_", "/")}" class="dumpthumb" title="${data.title}">
+				<img src="${data.thumbnail}" alt="${data.title}" title="${data.title}" width="100" height="100">
 				<span class="foto"></span>
 				<div class="details">
 					<h1>${data.title}</h1>
 					<date>${data.date}</date>
-					<p class="stats">${data.origin}</p>
 					<p class="description">${data.description}</p>
 				</div>
 			</a></div>`;
-
 		},
 
 		allmovies:'',
-
 
 		done(){
 
 			DumpertNext.allmovies = JSON.parse(localStorage.getItem("fast_load_allmovies"));
 
 			DumpertNext.log('done: ', DumpertNext.allmovies);
+			let regex = new RegExp(/([0-9]{6,12})[/_]([A-z0-9]+)(?:$|_|\/)/);
+			let id = regex.exec(window.location.href);
+			id = id[1]+'_'+id[2];
 
-			const currentMovie = DumpertNext.allmovies.findIndex(e => DumpertNext.getMovieUniqueId(e.url) === DumpertNext.getMovieUniqueId(window.location.href));
+			DumpertNext.log('current id: ', id);
+			const currentMovieIndex = DumpertNext.allmovies.findIndex(e => e.id === id);
+			DumpertNext.log('current index: ', currentMovieIndex);
 			let result = '';
 
-			if(currentMovie !== 0) result += DumpertNext.dumpertNextButtonHTML(DumpertNext.allmovies[currentMovie-1],'Back');
-			result += DumpertNext.dumpertNextButtonHTML(DumpertNext.allmovies[currentMovie+1],'Next');
+			if(currentMovieIndex !== 0) result += DumpertNext.dumpertNextButtonHTML(DumpertNext.allmovies[currentMovieIndex-1],'Back');
+			result += DumpertNext.dumpertNextButtonHTML(DumpertNext.allmovies[currentMovieIndex+1],'Next');
 
 			const buttons = document.createElement('div');
 			buttons.innerHTML = result;
-			buttons.style.display = 'block';
-			document.querySelector('#bekijkook').before(buttons);
+			buttons.style.float = 'left';
+			document.querySelector('.dump-meta').append(buttons);
 
 		},
 
-
 		allmovies_local: [],
 
-
-		fetcher(nr, testWaters = 0){
-	        DumpertNext.log('page: ' + nr, 'test waters: ', testWaters);
-
-			const origin = "https://www.dumpert.nl/" + nr;
-
+		fetcher(nr, testWaters = false){
+			DumpertNext.log('page: ' + nr, 'test waters: ', testWaters);
+			const origin = "https://api.dumpert.nl/mobile_api/json/latest/" + nr;
+			const nrOfTests = 15;
 			fetch(origin)
 			.then(data => data.text())
-			.then(html => DumpertNext.createArticleObjectArray(html, origin, testWaters))
+			.then(json => JSON.parse(json).items)
 			.then(result => {
-				if(testWaters) DumpertNext.log('Up to date:', result[0].url === JSON.parse(localStorage.getItem("fast_load_allmovies"))[0].url);
 
-				if(
-					testWaters &&
-					DumpertNext.getMovieUniqueId(result[0].url) ===
-					DumpertNext.getMovieUniqueId(JSON.parse(localStorage.getItem("fast_load_allmovies"))[0].url)
-				){
-	                DumpertNext.log('Triggerd done()');
-	                DumpertNext.done();
+				//test first page
+				let itemsThatAreTheSame = 0;
+				if(localStorage.getItem("fast_load_allmovies") !== null){
+					const localItems = JSON.parse(localStorage.getItem("fast_load_allmovies"));
+					for (var i = 0; i < nrOfTests; i++){
+						if(result[i] !== undefined && localItems[i] !== undefined){
+							const localItemId = localItems[i].id;
+							const resultItemId = result[i].id;
+							if(localItemId === resultItemId){
+								itemsThatAreTheSame++;
+								DumpertNext.log(localItemId + ' = ' + resultItemId);
+							}else{
+								DumpertNext.log(localItemId + ' != ' + resultItemId);
+							}
+						}
+
+					}
+
+				}
+				//result comes in...
+				if( testWaters ) DumpertNext.log('Up to date:', itemsThatAreTheSame === nrOfTests);
+
+				//all done
+				if( testWaters && itemsThatAreTheSame === nrOfTests){
+					DumpertNext.log('Triggerd done()');
+					DumpertNext.done();
+
+				//parse 30 pages
 				}else{
-	                DumpertNext.log('parse Dumpert Pages:', nr);
-	                if(nr < 20){
+					DumpertNext.log('parse Dumpert Pages:', nr);
+					if(nr < 30){
 
-	                    DumpertNext.allmovies_local.push(...result);
-	                    nr++;
-	                    DumpertNext.fetcher(nr);
+						DumpertNext.allmovies_local.push(...result);
+						nr++;
+						DumpertNext.fetcher(nr);
 
-	                }else if(nr === 20){
+					}else if(nr === 30){
 
-	                    localStorage.setItem("fast_load_allmovies", JSON.stringify(DumpertNext.allmovies_local));
-	                    DumpertNext.done();
+						localStorage.setItem("fast_load_allmovies", JSON.stringify(DumpertNext.allmovies_local));
+						DumpertNext.done();
 
-	                }
-	            }
+					}
+				}
 			});
 		}
 	};
 
-
 	if (localStorage.getItem("fast_load_allmovies") === null){
-	    DumpertNext.log('Nothing Stored');
-		DumpertNext.fetcher(1);
+		DumpertNext.log('Nothing Stored');
+		const startPage = 0;
+		DumpertNext.fetcher(startPage);
 	}else{
-	    DumpertNext.log('Something Stored');
-	    DumpertNext.fetcher(1, DumpertNext.TESTWATERS);
+		DumpertNext.log('Something Stored');
+		const startPage = 0;
+		DumpertNext.fetcher(startPage, TEST_WATERS);
 	}
 
 })();
-
-
-
-
-
-
-
-
-
