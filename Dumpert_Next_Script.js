@@ -2,7 +2,7 @@
 License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 // ==UserScript==
 // @name     Dumpert Next
-// @version  3
+// @version  3.1
 // @description  A button for dumpert.nl to go to the next or previous video.
 // @author       ZIMONH
 // @include  https://www.dumpert.nl/*
@@ -34,7 +34,7 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 				<div class="details">
 					<h1>${data.title}</h1>
 					<date>${data.date}</date>
-					<p class="description">${data.description}</p>
+					<p class="description">${data.description.replace(/<\/?a[^>]*>/g,'')}</p>
 				</div>
 			</a></div>`;
 		},
@@ -134,3 +134,16 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 	}
 
 })();
+
+
+
+
+
+
+
+
+
+
+
+
+
