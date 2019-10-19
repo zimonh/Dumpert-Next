@@ -10,23 +10,19 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 // ==/UserScript==
 /*jshint esversion: 6 */
 (() => {
-
-
+    
 	const DumpertNextGo = () =>{
 
 		console.log('DumpertNext:',"go");
 
 		setTimeout(()=>{
 
-
-
-			const under = document.createElement('div');
-			const meta = document.querySelector('.dump-meta');
-			under.innerHTML = meta;
-			document.querySelector('.action_bar').innerHTML = '';
-			document.querySelector('.action_bar').append(meta);
-
-			const TEST_WATERS = true;
+            const dumpertElement = document.querySelectorAll('div[class^="socialbar"]')[1];
+            dumpertElement.style.maxWidth = "unset";
+            dumpertElement.style.width = "100%";
+			dumpertElement.innerHTML = '';
+			
+            const TEST_WATERS = true;
 
 			const DumpertNext = {
 
@@ -38,8 +34,8 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 
 					DumpertNext.log('dumpertNextButtonHTML: ', data, direction);
 
-				return `<div style="width:45%; display: inline-block; margin: 8px;"><h1>${direction}</h1><a href="https://www.dumpert.nl/mediabase/${data.id.replace("_", "/")}" class="dumpthumb" title="${data.title}">
-						<img src="${data.thumbnail}" alt="${data.title}" title="${data.title}" width="80" height="80" style="display:inline-block;">
+				return `<div style="width:45%; display: inline-block; margin: 8px;"><h1>${direction}</h1><a style="width:unset; height:unset; vertical-align:top;" href="https://www.dumpert.nl/mediabase/${data.id.replace("_", "/")}" class="dumpthumb" title="${data.title}">
+						<img src="${data.thumbnail}" alt="${data.title}" title="${data.title}" width="80" height="80" style="display:inline-block;margin-right:8px;">
 						<div class="details" style="display: inline-block; width: 70%;">
 							<h1>${data.title}</h1>
 							<date>${data.date}</date>
@@ -70,7 +66,9 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 					//const buttons = document.createElement('div');
 					//buttons.innerHTML = result;
 				   // DumpertNext.log(buttons)
-					document.querySelector('.action_bar').innerHTML = result;
+
+                    dumpertElement.innerHTML = result;
+					//document.querySelector('.action_bar').innerHTML = result;
 
 				},
 
@@ -166,6 +164,9 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 		},200);
 	};
 
+
+
+
 	const setAllHomeButtonTriggers = () =>{
 		console.log('setAllHomeButtonTriggers');
 		setTimeout(()=>{
@@ -189,3 +190,6 @@ License: https://creativecommons.org/licenses/by-nc-sa/4.0/*/
 	const done = location.href === "https://www.dumpert.nl/" ? setAllMoviesButtonTriggers() : DumpertNextGo();
 
 })();
+
+
+
